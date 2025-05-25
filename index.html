@@ -3,52 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Baymax - Twój Asystent</title>
-  <style>
-    body { font-family: Arial; background: #f0f8ff; text-align: center; padding: 50px; }
-    #avatar { width: 200px; margin-bottom: 20px; }
-    #output { border: 1px solid #ccc; padding: 20px; width: 300px; margin: auto; background: white; border-radius: 8px; }
-    input, button { padding: 10px; margin: 5px; }
-  </style>
+  <title>Baymax – Twój Asystent</title>
 </head>
 <body>
-  <img id="avatar" src="https://media.giphy.com/media/IThjAlJnD9WNO/giphy.gif" alt="Baymax" />
-  <h1>Cześć, jestem Baymax</h1>
-  <p>Jak się dziś czujesz?</p>
-
-  <input id="userInput" placeholder="Napisz coś..." />
-  <button onclick="talk()">Wyślij</button>
-  <div id="output"></div>
+  <h1>Cześć! Jestem Baymax</h1>
+  <p>Kliknij mikrofon, aby porozmawiać!</p>
+  <button onclick="startRecognition()">🎤 Mów</button>
+  <p id="response"></p>
 
   <script>
-    async function talk() {
-      const input = document.getElementById("userInput").value;
-      const responseBox = document.getElementById("output");
-      responseBox.innerHTML = "Myślę...";
+    const responses = {
+      "cześć": "Cześć! Jak się dziś czujesz?",
+      "jak się masz": "Dziękuję, mam się świetnie! A Ty?",
+      "do widzenia": "Na razie! Pamiętaj, że jestem tu, gdy mnie potrzebujesz."
+    };
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer nic"
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "system", content: "Jesteś troskliwym asystentem medycznym Baymaxem, który mówi po polsku i dba o użytkownika." },
-                     { role: "user", content: input }]
-        })
-      });
+    function startRecognition() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'pl-PL';
+      recognition.start();
 
-      const data = await response.json();
-      const message = data.choices?.[0]?.message?.content || "Coś poszło nie tak 😢";
-      responseBox.innerHTML = message;
-      speak(message);
-    }
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        const reply = responses[transcript] || "Przepraszam, nie zrozumiałem. Powtórz proszę.";
+        document.getElementById("response").textContent = "Baymax: " + reply;
 
-    function speak(text) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'pl-PL';
-      speechSynthesis.speak(utterance);
+        const speech = new SpeechSynthesisUtterance(reply);
+        speech.lang = "pl-PL";
+        speechSynthesis.speak(speech);
+      };
     }
   </script>
 </body>
