@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Baymax - Twój Asystent</title>
+  <style>
+    body { font-family: Arial; background: #f0f8ff; text-align: center; padding: 50px; }
+    #avatar { width: 200px; margin-bottom: 20px; }
+    #output { border: 1px solid #ccc; padding: 20px; width: 300px; margin: auto; background: white; border-radius: 8px; }
+    input, button { padding: 10px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <img id="avatar" src="https://media.giphy.com/media/IThjAlJnD9WNO/giphy.gif" alt="Baymax" />
+  <h1>Cześć, jestem Baymax</h1>
+  <p>Jak się dziś czujesz?</p>
+
+  <input id="userInput" placeholder="Napisz coś..." />
+  <button onclick="talk()">Wyślij</button>
+  <div id="output"></div>
+
+  <script>
+    async function talk() {
+      const input = document.getElementById("userInput").value;
+      const responseBox = document.getElementById("output");
+      responseBox.innerHTML = "Myślę...";
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer nic"
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "system", content: "Jesteś troskliwym asystentem medycznym Baymaxem, który mówi po polsku i dba o użytkownika." },
+                     { role: "user", content: input }]
+        })
+      });
+
+      const data = await response.json();
+      const message = data.choices?.[0]?.message?.content || "Coś poszło nie tak 😢";
+      responseBox.innerHTML = message;
+      speak(message);
+    }
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pl-PL';
+      speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>
